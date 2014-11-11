@@ -203,14 +203,14 @@ def compare_collections(source, dest, percent, error_bp, recent_ops, ids_file):
     MismatchLogger.collection_name = source['collection']
 
     # setup client connections
-    source_client = utils.mongo_connect(source['host'], source['port'],
+    source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
                                         max_pool_size=POOL_SIZE,
                                         slave_okay=True,
                                         document_class=dict)
     source_collection = source_client[source['db']][source['collection']]
 
-    dest_client = utils.mongo_connect(dest['host'], dest['port'],
+    dest_client = utils.mongo_connect(dest,
                                       ensure_direct=True,
                                       max_pool_size=POOL_SIZE,
                                       slave_okay=True,

@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     # connect to source and destination
     source = utils.parse_mongo_url(args.source)
-    source_client = utils.mongo_connect(source['host'], source['port'],
+    source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
                                         max_pool_size=POOL_SIZE,
                                         read_preference=ReadPreference.SECONDARY_PREFERRED,
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
 
     dest = utils.parse_mongo_url(args.dest)
-    dest_client = utils.mongo_connect(dest['host'], dest['port'],
+    dest_client = utils.mongo_connect(dest,
                                       max_pool_size=POOL_SIZE,
                                       document_class=FasterOrderedDict)
     dest_collection = dest_client[dest['db']][dest['collection']]

@@ -6,6 +6,7 @@ import pymongo
 from pymongo.errors import AutoReconnect, ConnectionFailure, OperationFailure, TimeoutError
 import signal
 import sys
+import re
 
 loggers = {}
 def get_logger(name):
@@ -31,7 +32,7 @@ def get_logger(name):
 log = get_logger("utils")
 
 
-def mongo_connect(host, port, ensure_direct=False, secondary_only=False, max_pool_size=1,
+def mongo_connect(config, ensure_direct=False, secondary_only=False, max_pool_size=1,
                   socketTimeoutMS=None, w=0, read_preference=None, document_class=dict,
                   replicaSet=None, slave_okay=None):
     """
@@ -46,8 +47,8 @@ def mongo_connect(host, port, ensure_direct=False, secondary_only=False, max_poo
     most other keyword arguments mirror those for pymongo.MongoClient
     """
     options = dict(
-        host=host,
-        port=port,
+        host=config['host'],
+        port=config['port'],
         socketTimeoutMS=socketTimeoutMS,
         use_greenlets=True,
         max_pool_size=max_pool_size,
@@ -71,6 +72,10 @@ def mongo_connect(host, port, ensure_direct=False, secondary_only=False, max_poo
             raise ValueError("connected to %s:%d (expected %s:%d)" %
                              (connection.host, connection.port, host, port))
 
+    db = config['db']
+    if not client[db].authenticate(config['user'], config['password']):
+        raise ValueError("failed to authenticate to %s:%s with user %s and supplied password" % (host, port, user))
+
     return client
 
 
@@ -83,9 +88,13 @@ def parse_mongo_url(url):
     and returns a dictionary containing elements 'host', 'port', 'db', 'collection'
     """
     try:
-        host, db, collection = url.split('/')
+        parts = re.split('[/:@]', url)
+        if len(parts) == 3
+          host, db, collection = parts
+        elif len(parts) == 5
+          user, password, host, db, collection = parts
     except ValueError:
-        raise ValueError("urls be of format: host[:port]/db/collection")
+        raise ValueError("urls be of format: [user:password@]host[:port]/db/collection")
 
     host_tokens = host.split(':')
     if len(host_tokens) == 2:
@@ -96,7 +105,7 @@ def parse_mongo_url(url):
     elif len(host_tokens) > 2:
         raise ValueError("urls be of format: host[:port]/db/collection")
 
-    return dict(host=host, port=port, db=db, collection=collection)
+    return dict(host=host, port=port, db=db, collection=collection, user=user, password=password)
 
 
 def _source_file_syntax():

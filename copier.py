@@ -88,7 +88,7 @@ def copy_collection(source, dest, state_path, percent):
     state_db = CopyStateDB(state_path)
 
     # connect to mongo
-    source_client = utils.mongo_connect(source['host'], source['port'],
+    source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
                                         max_pool_size=30,
                                         read_preference=ReadPreference.SECONDARY,
@@ -99,7 +99,7 @@ def copy_collection(source, dest, state_path, percent):
         raise Exception("for performance reasons, sources must be mongod instances; %s:%d is not",
                         source['host'], source['port'])
 
-    dest_client = utils.mongo_connect(dest['host'], dest['port'],
+    dest_client = utils.mongo_connect(dest,
                                       max_pool_size=30,
                                       document_class=FasterOrderedDict)
     dest_collection = dest_client[dest['db']][dest['collection']]
@@ -171,13 +171,13 @@ def copy_indexes(source, dest):
     and sparse.
     """
     # connect to mongo instances
-    source_client = utils.mongo_connect(source['host'], source['port'],
+    source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
                                         max_pool_size=1,
                                         read_preference=ReadPreference.SECONDARY)
     source_collection = source_client[source['db']][source['collection']]
 
-    dest_client = utils.mongo_connect(dest['host'], dest['port'], max_pool_size=1)
+    dest_client = utils.mongo_connect(dest, max_pool_size=1)
     dest_collection = dest_client[dest['db']][dest['collection']] 
 
     # copy indices

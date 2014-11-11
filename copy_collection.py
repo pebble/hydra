@@ -32,7 +32,7 @@ def die(msg):
 
 
 def ensure_empty_dest(dest):
-    client = utils.mongo_connect(dest['host'], dest['port'],
+    client = utils.mongo_connect(dest,
                                  ensure_direct=True,
                                  max_pool_size=1,
                                  read_preference=ReadPreference.PRIMARY)
