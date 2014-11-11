@@ -68,7 +68,7 @@ def mongo_connect(config, ensure_direct=False, secondary_only=False, max_pool_si
         test_collection = client['local']['test']
         test_cursor = test_collection.find(slave_okay=True, limit=1)
         connection = test_cursor.collection.database.connection
-        if connection.host != host or connection.port != port:
+        if connection.host != options['host'] or connection.port != options['port']:
             raise ValueError("connected to %s:%d (expected %s:%d)" %
                              (connection.host, connection.port, host, port))
 
@@ -90,17 +90,9 @@ def parse_mongo_url(url):
     try:
         parts = re.split('[/:@]', url)
         user, password, host, port, db, collection = parts
+        port = int(port)
     except ValueError:
         raise ValueError("urls be of format: user:password@host:port/db/collection")
-
-    host_tokens = host.split(':')
-    if len(host_tokens) == 2:
-        host = host_tokens[0]
-        port = int(host_tokens[1])
-    elif len(host_tokens) == 1:
-        port = 27017
-    elif len(host_tokens) > 2:
-        raise ValueError("urls be of format: host[:port]/db/collection")
 
     return dict(host=host, port=port, db=db, collection=collection, user=user, password=password)
 
