@@ -89,9 +89,9 @@ def parse_mongo_url(url):
     """
     try:
         parts = re.split('[/:@]', url)
-        if len(parts) == 3
+        if len(parts) == 3:
           host, db, collection = parts
-        elif len(parts) == 5
+        elif len(parts) == 5:
           user, password, host, db, collection = parts
     except ValueError:
         raise ValueError("urls be of format: [user:password@]host[:port]/db/collection")
