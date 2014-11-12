@@ -184,19 +184,32 @@ def copy_indexes(source, dest):
     for name, index in source_collection.index_information().items():
         kwargs = { 'name': name }
         index_key = None
+        #print index
         for k, v in index.items():
-            if k in ['unique', 'sparse']:
+            #print "%s\t%s\t%s\t%s" % (name, index, k, v)
+            if k in ['unique', 'sparse', 'background', 'safe', 'default_language', 'weights', 'language_override', 'textIndexVersion']:
                 kwargs[k] = v
             elif k == 'v':
                 continue
             elif k == 'key':
                 # sometimes, pymongo will give us floating point numbers, so let's make sure
                 # they're ints instead
-                index_key = [(field, int(direction)) for (field, direction) in v]
+                #print "\n\n"
+                #print k
+                #print v
+                index_key = []
+                for field, direction in v:
+                    try:
+                        index_key.append((field, int(direction)))
+                    except ValueError as e:
+                        index_key.append((field, direction))
             else:
+                print "\n\n"
+                print "%s\t%s\t%s\t%s" % (name, index, k, v)
                 raise NotImplementedError("don't know how to handle index info key %s" % k)
             # TODO: there are other index options that probably aren't handled here
 
         assert index_key is not None
         log.info("ensuring index on %s (options = %s)", index_key, kwargs)
         dest_collection.ensure_index(index_key, **kwargs)
+
