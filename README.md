@@ -29,9 +29,15 @@ To use this software, use [pip](http://www.pip-installer.org/en/latest/) to inst
 
 This script copies all of the collections (that don't begin with `system.`) from source_database to dest_database
 
-~~
+~~~
 ./copy_whole_db.sh source_username source_password source_database dest_username dest_password dest_database
-~~
+~~~
+
+You can check the status of the counts of the collections with:
+
+~~~
+./copy_whole_db.sh --check source_username source_password source_database dest_username dest_password dest_database
+~~~
 
 ### copy_collection.py
 
