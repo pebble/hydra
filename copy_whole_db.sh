@@ -44,7 +44,7 @@ esac
 # Start sync/tail processes for each collection
 PIDS=()
 for COLLECTION in $COLLECTIONS; do
-    ./copy_collection.py \
+    python2.7 copy_collection.py \
       --source $SOURCE_USER:$SOURCE_PASS@$SOURCE_DB/$COLLECTION \
       --dest   $DEST_USER:$DEST_PASS@$DEST_DB/$COLLECTION &
     PIDS=("${PIDS[@]}" "$!")
