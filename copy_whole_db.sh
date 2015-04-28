@@ -44,10 +44,9 @@ esac
 # Start sync/tail processes for each collection
 PIDS=()
 for COLLECTION in $COLLECTIONS; do
-    echo ./copy_collection.py \
+    ./copy_collection.py \
       --source $SOURCE_USER:$SOURCE_PASS@$SOURCE_DB/$COLLECTION \
       --dest   $DEST_USER:$DEST_PASS@$DEST_DB/$COLLECTION
-    while true; do sleep 1;done &
     PIDS=("${PIDS[@]}" "$!")
 done
 
