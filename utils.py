@@ -3,7 +3,7 @@ import gc
 import gevent
 import logging
 import pymongo
-from pymongo.errors import AutoReconnect, ConnectionFailure, OperationFailure, TimeoutError
+from pymongo.errors import AutoReconnect, ConnectionFailure, OperationFailure
 import signal
 import sys
 import re
@@ -87,14 +87,17 @@ def parse_mongo_url(url):
 
     and returns a dictionary containing elements 'host', 'port', 'db', 'collection'
     """
-    try:
-        parts = re.split('[/:@]', url)
-        user, password, host, port, db, collection = parts
-        port = int(port)
-    except ValueError:
-        raise ValueError("urls be of format: user:password@host:port/db/collection")
+    print "got url"
+    print url
+    #try:
+    parts = re.split('[/:@]', url)
+    print parts
+    user, password, host, port, db, collection = parts
+    port = int(port)
+    #except ValueError:
+    #    raise ValueError("urls be of format: user:password@host:port/db/collection")
 
-    return dict(host=host, port=port, db=db, collection=collection, user=user, password=password)
+    #return dict(host=host, port=port, db=db, collection=collection, user=user, password=password)
 
 
 def _source_file_syntax():
@@ -272,7 +275,7 @@ def auto_retry(func):
         while True:
             try:
                 return func(*args, **kwargs)
-            except (AutoReconnect, ConnectionFailure, OperationFailure, TimeoutError):
+            except (AutoReconnect, ConnectionFailure, OperationFailure):
                 failures += 1
                 if stats:
                     stats.retries += 1
