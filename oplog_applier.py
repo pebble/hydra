@@ -121,7 +121,7 @@ def _apply_op(op, source_collection, dest_collection, stats):
     elif op['op'] == 'u':
         # update. which involves re-reading the document from the source and updating the
         # destination with the updated contents
-        doc = source_collection.find_one({'_id': _id}, slave_okay=True)
+        doc = source_collection.find_one({'_id': _id})
         if not doc:
             # document not found (might have been deleted in a subsequent oplog entry)
             stats.update_warnings += 1
@@ -214,7 +214,6 @@ def apply_oplog(source, dest, percent, state_path):
     cursor = oplog.find(
         query,
         cursor_type=CursorType.TAILABLE_AWAIT,
-        slave_okay=True
     )
     cursor.add_option(pymongo.cursor._QUERY_OPTIONS['oplog_replay'])
     while True:
