@@ -6,6 +6,7 @@ from gevent.pool import Pool
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from pymongo.read_preferences import ReadPreference
+from pymongo.cursor import CursorType
 import time
 import utils
 from utils import auto_retry, log_exceptions, squelch_keyboard_interrupt
@@ -210,7 +211,11 @@ def apply_oplog(source, dest, percent, state_path):
     query = {}
     query['ts'] = {'$gte': start_ts}
     query['ns'] = source_collection.full_name 
-    cursor = oplog.find(query, timeout=False, tailable=True, slave_okay=True, await_data=True)
+    cursor = oplog.find(
+        query,
+        cursor_type=CursorType.TAILABLE_AWAIT,
+        slave_okay=True
+    )
     cursor.add_option(pymongo.cursor._QUERY_OPTIONS['oplog_replay'])
     while True:
         for op in cursor:

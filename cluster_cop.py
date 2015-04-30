@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # connect to mongo
     log.info("connecting to %s:%d", host, port)
-    client = pymongo.MongoClient(host, port, max_pool_size=1)
+    client = pymongo.MongoClient(host, port, maxPoolSize=1)
     shards_collection = client['config']['shards']
     log.info("connected")
 

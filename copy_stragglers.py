@@ -72,7 +72,7 @@ if __name__ == '__main__':
     source = utils.parse_mongo_url(args.source)
     source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
-                                        max_pool_size=POOL_SIZE,
+                                        maxPoolSize=POOL_SIZE,
                                         read_preference=ReadPreference.SECONDARY_PREFERRED,
                                         document_class=FasterOrderedDict)
     source_collection = source_client[source['db']][source['collection']]
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     dest = utils.parse_mongo_url(args.dest)
     dest_client = utils.mongo_connect(dest,
-                                      max_pool_size=POOL_SIZE,
+                                      maxPoolSize=POOL_SIZE,
                                       document_class=FasterOrderedDict)
     dest_collection = dest_client[dest['db']][dest['collection']]
 

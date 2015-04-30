@@ -124,7 +124,10 @@ def copy_collection(source, dest, state_path, percent):
     # get all _ids, which works around a mongo bug/feature that causes massive slowdowns
     # of long-running, large reads over time
     ids = []
-    cursor = source_collection.find(fields=["_id"], snapshot=True, timeout=False)
+    cursor = source_collection.find(
+        projection={'_id':True},
+        modifiers={'$snapshot':True}
+    )
     cursor.batch_size(5000)
     insert_pool = Pool(INSERT_POOL_SIZE)
     stats_greenlet = gevent.spawn(_copy_stats_worker, stats)
@@ -184,19 +187,14 @@ def copy_indexes(source, dest):
     for name, index in source_collection.index_information().items():
         kwargs = { 'name': name }
         index_key = None
-        #print index
         for k, v in index.items():
-            #print "%s\t%s\t%s\t%s" % (name, index, k, v)
-            if k in ['unique', 'sparse', 'background', 'safe', 'default_language', 'weights', 'language_override', 'textIndexVersion']:
+            if k in ['unique', 'sparse', 'background', 'safe',
+                    'default_language', 'weights', 'language_override',
+                    'textIndexVersion','ns']:
                 kwargs[k] = v
             elif k == 'v':
                 continue
             elif k == 'key':
-                # sometimes, pymongo will give us floating point numbers, so let's make sure
-                # they're ints instead
-                #print "\n\n"
-                #print k
-                #print v
                 index_key = []
                 for field, direction in v:
                     try:

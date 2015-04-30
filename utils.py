@@ -4,9 +4,13 @@ import gevent
 import logging
 import pymongo
 from pymongo.errors import AutoReconnect, ConnectionFailure, OperationFailure
+from pymongo.uri_parser import parse_uri
 import signal
+import gevent
 import sys
 import re
+
+gevent.monkey.patch_all()
 
 loggers = {}
 def get_logger(name):
@@ -34,7 +38,7 @@ log = get_logger("utils")
 
 def mongo_connect(config, ensure_direct=False, secondary_only=False, max_pool_size=1,
                   socketTimeoutMS=None, w=0, read_preference=None, document_class=dict,
-                  replicaSet=None, slave_okay=None):
+                  replicaSet=None):
     """
     Same as MongoClient.connect, except that we are paranoid and ensure that cursors
     # point to what we intended to point them to. Also sets reasonable defaults for our
@@ -46,59 +50,53 @@ def mongo_connect(config, ensure_direct=False, secondary_only=False, max_pool_si
 
     most other keyword arguments mirror those for pymongo.MongoClient
     """
+    
     options = dict(
         host=config['host'],
         port=config['port'],
         socketTimeoutMS=socketTimeoutMS,
-        use_greenlets=True,
-        max_pool_size=max_pool_size,
+        maxPoolSize=max_pool_size,
         w=1,
-        document_class=document_class)
-    if replicaSet is not None:
-        options['replicaSet'] = replicaSet
+        document_class=document_class,
+    )
+    
     if read_preference is not None:
         options['read_preference'] = read_preference
-    if slave_okay is not None:
-        options['slave_okay'] = slave_okay
+    if replicaSet is not None:
+        options['replicaSet'] = replicaSet
+    if socketTimeoutMS is not None:
+        options['socketTimeoutMS'] = socketTimeoutMS
+    
     client = pymongo.MongoClient(**options)
 
-    if ensure_direct:
-        # make sure we are connected to mongod/mongos that was specified; mongodb drivers
-        # have the tendency of doing "magical" things in terms of connecting to other boxes
-        test_collection = client['local']['test']
-        test_cursor = test_collection.find(slave_okay=True, limit=1)
-        connection = test_cursor.collection.database.connection
-        if connection.host != options['host'] or connection.port != options['port']:
-            raise ValueError("connected to %s:%d (expected %s:%d)" %
-                             (connection.host, connection.port, host, port))
-
     db = config['db']
-    if not client[db].authenticate(config['user'], config['password']):
+    if not client[db].authenticate(
+        config['user'],
+        config['password'],
+        source=config['options'].get('authsource',None)
+    ):
         raise ValueError("failed to authenticate to %s:%s with user %s and supplied password" % (host, port, user))
 
     return client
 
 
-def parse_mongo_url(url):
+def parse_mongo_url(uri):
     """
-    Takes in pseudo-URL of form
+    Takes in a standard mongo:// url and returns a dictionary of elements:
+    'host', 'port', 'db', 'collection', 'user', 'password', 'options'
 
-    host[:port]/db/collection (e.g. localhost/prod_maestro/emails)
-
-    and returns a dictionary containing elements 'host', 'port', 'db', 'collection'
+    TODO: remove this function and use parse_uri directly in rest of codebase
     """
-    print "got url"
-    print url
-    #try:
-    parts = re.split('[/:@]', url)
-    print parts
-    user, password, host, port, db, collection = parts
-    port = int(port)
-    #except ValueError:
-    #    raise ValueError("urls be of format: user:password@host:port/db/collection")
-
-    #return dict(host=host, port=port, db=db, collection=collection, user=user, password=password)
-
+    parsed_uri = parse_uri(uri)
+    return dict(
+        host = parsed_uri['nodelist'][0][0],
+        port = parsed_uri['nodelist'][0][1],
+        db = parsed_uri['database'],
+        collection = parsed_uri['collection'],
+        user = parsed_uri['username'],
+        password = parsed_uri['password'],
+        options = parsed_uri['options'],
+    )
 
 def _source_file_syntax():
     print "--source files must be of the following format:"

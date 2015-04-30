@@ -205,14 +205,14 @@ def compare_collections(source, dest, percent, error_bp, recent_ops, ids_file):
     # setup client connections
     source_client = utils.mongo_connect(source,
                                         ensure_direct=True,
-                                        max_pool_size=POOL_SIZE,
+                                        maxPoolSize=POOL_SIZE,
                                         slave_okay=True,
                                         document_class=dict)
     source_collection = source_client[source['db']][source['collection']]
 
     dest_client = utils.mongo_connect(dest,
                                       ensure_direct=True,
-                                      max_pool_size=POOL_SIZE,
+                                      maxPoolSize=POOL_SIZE,
                                       slave_okay=True,
                                       document_class=dict)
 
