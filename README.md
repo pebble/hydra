@@ -46,7 +46,7 @@ Steps #1 and #3 are performed by worker processeses, one for each source you def
 Typical usage for `copy_collection.py` looks like:
 
 ~~~
-copy_collection.py --source source_file.txt --dest mongos_host/database/collection
+copy_collection.py --source source_file.txt --dest mongos_host/database.collection
 ~~~
 
 The file passed to `--source` must have the following format:
@@ -58,7 +58,7 @@ mongod-instance-2.foo.com:27019
 mongod-instance-3.foo.com:27018
 ~~~
 
-Alternatively, `--source` can also accept as a parameter a `mongod` URL of a form similar to `--dest` (host[:port]/database/collection).
+Alternatively, `--source` can also accept as a parameter a `mongod` URL of a form similar to `--dest` (host[:port]/database.collection).
 
 **NOTE:** sources need to be `mongod` instances, and preferably secondaries rather than primaries. I had a difficult time getting sufficient reliability and performance when copying from a `mongos` instance. However, the destination must be either a `mongod` instance (for a non-shared MongoDB setup) or a `mongos` instance (for a sharded setup).
 
