@@ -70,6 +70,9 @@ def mongo_connect(config, ensure_direct=False, secondary_only=False, max_pool_si
     client = pymongo.MongoClient(**options)
 
     db = config['db']
+    if 'user' not in config:
+        return client
+
     if not client[db].authenticate(
         config['user'],
         config['password'],
